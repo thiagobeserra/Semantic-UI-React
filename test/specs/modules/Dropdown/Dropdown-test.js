@@ -1257,10 +1257,9 @@ describe('Dropdown', () => {
     it('is called once when the icon is clicked with a search prop', () => {
       // https://github.com/Semantic-Org/Semantic-UI-React/issues/2600
       const onOpen = sandbox.spy()
-      wrapperMount(<Dropdown options={options} selection search onOpen={onOpen} />)
-        .find('i.icon')
-        .simulate('click')
+      wrapperMount(<Dropdown onOpen={onOpen} options={options} selection search />)
 
+      wrapper.find('i.icon').simulate('click')
       onOpen.should.have.been.calledOnce()
     })
   })

@@ -676,13 +676,17 @@ export default class Dropdown extends Component {
     // prevent closeOnDocumentClick()
     e.stopPropagation()
 
-    if (!search) return this.toggle(e)
-    if (open) return
-    if (searchQuery.length >= minCharacters || minCharacters === 1) {
-      this.open(e)
+    if (!search) {
+      this.toggle(e)
       return
     }
+
     if (this.searchRef) this.searchRef.focus()
+    if (open) return
+
+    if (searchQuery.length >= minCharacters || minCharacters === 1) {
+      this.open(e)
+    }
   }
 
   handleIconClick = (e) => {
@@ -744,14 +748,17 @@ export default class Dropdown extends Component {
     const currentTarget = _.get(e, 'currentTarget')
     if (currentTarget && currentTarget.contains(document.activeElement)) return
 
-    const { closeOnBlur, multiple, onBlur, selectOnBlur } = this.props
+    const { closeOnBlur, multiple, selectOnBlur } = this.props
     // do not "blur" when the mouse is down inside of the Dropdown
     if (this.isMouseDown) return
-    if (onBlur) onBlur(e, this.props)
+
+    _.invoke(this.props, 'onBlur', e, this.props)
+
     if (selectOnBlur && !multiple) {
       this.makeSelectedItemActive(e)
       if (closeOnBlur) this.close()
     }
+
     this.setState({ focus: false })
     this.clearSearchQuery()
   }
@@ -956,17 +963,19 @@ export default class Dropdown extends Component {
     e.stopPropagation()
 
     this.setState({ selectedLabel: labelProps.value })
-
-    const { onLabelClick } = this.props
-    if (onLabelClick) onLabelClick(e, labelProps)
+    _.invoke(this.props, 'onLabelClick', e, labelProps)
   }
 
   handleLabelRemove = (e, labelProps) => {
     debug('handleLabelRemove()')
+    const { multiple, search } = this.props
+
     // prevent focusing search input on click
     e.stopPropagation()
+
     const { value } = this.state
     const newValue = _.without(value, labelProps.value)
+
     debug('label props:', labelProps)
     debug('current value:', value)
     debug('remove value:', labelProps.value)
@@ -975,6 +984,8 @@ export default class Dropdown extends Component {
     this.setValue(newValue)
     this.setSelectedIndex(newValue)
     this.handleChange(e, newValue)
+
+    if (multiple && search && this.searchRef) this.searchRef.focus()
   }
 
   moveSelectionBy = (offset, startIndex = this.state.selectedIndex) => {
@@ -1110,24 +1121,26 @@ export default class Dropdown extends Component {
   }
 
   open = (e) => {
-    debug('open()')
+    const { disabled, open, search } = this.props
+    debug('open()', { disabled, open, search })
 
-    const { disabled, onOpen, search } = this.props
     if (disabled) return
     if (search && this.searchRef) this.searchRef.focus()
-    if (onOpen) onOpen(e, this.props)
+
+    _.invoke(this.props, 'onOpen', e, this.props)
 
     this.trySetState({ open: true })
     this.scrollSelectedItemIntoView()
   }
 
   close = (e) => {
-    debug('close()')
+    const { open } = this.state
+    debug('close()', { open })
 
-    const { onClose } = this.props
-    if (onClose) onClose(e, this.props)
-
-    this.trySetState({ open: false })
+    if (open) {
+      _.invoke(this.props, 'onClose', e, this.props)
+      this.trySetState({ open: false })
+    }
   }
 
   handleClose = () => {
