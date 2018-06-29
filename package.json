@@ -1,5 +1,5 @@
 {
-  "name": "semantic-ui-react",
+  "name": "semantic-ui-react-magalu",
   "version": "0.81.3",
   "description": "The official Semantic-UI-React integration.",
   "jsnext:main": "dist/es/index.js",
